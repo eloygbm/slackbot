@@ -25,7 +25,9 @@ def ask():
     actions = {
         "list" : listsurveys,
         "this" : createsurvey,
-        "cancel": cancelsurvey
+        "cancel" : cancelsurvey,
+        "reply" : vote,
+        "myreply" : myvote
     }
     HELP_TEXT = "You shoud choose an action %s " % actions.keys()
 
@@ -46,6 +48,67 @@ def ask():
 
     return HELP_TEXT
 
+def vote (user, action_text):
+    """
+        Vote for a survey    
+    """
+    survey_id = ""
+    option = ""
+
+    try:
+        parameters = action_text.split(' ',1)[1]
+        survey_id = parameters.split(' ')[0]
+        option = parameters.split(' ')[1]
+
+        app.logger.debug("%s %s %s " % (user, survey_id, option))
+
+    except Exception, e:
+        return('Parameters ERROR - Example to vote option 3 for ask #2: `/ask reply 2 3`')
+
+    try:
+        database = db.get_db()
+        database.execute('delete from vote where survey_id = ? and user = ?', [survey_id, user])
+        database.execute('insert into vote (survey_id, user, option) values (?, ?, ?)', [survey_id, user, option])
+        database.commit()
+
+    except Exception, e:
+        app.logger.debug(e)
+        return('DB ERROR')   
+    finally:
+        database.close()    
+
+    return "Hi %s, you voted the survey %s with option %s." % (user, survey_id, option)
+
+def myvote (user, action_text):
+    """
+        Show my vote for a survey    
+    """
+    survey_id = ""
+    option = ""
+    try:
+        parameters = action_text.split(' ',1)[1]
+        survey_id = parameters.split(' ')[0]
+
+        app.logger.debug("%s %s" % (user, survey_id))
+
+    except Exception, e:
+        return('Parameters ERROR - Example to show your vote ask #2: `/ask myreply 2`')
+
+    try:
+        database = db.get_db()
+        cur = database.execute('select option from vote where survey_id = ? and user = ?', [survey_id, user])
+        option = cur.fetchone()
+    except Exception, e:
+        app.logger.debug(e)
+        return('DB ERROR')   
+    finally:
+        database.close()    
+
+    if option is None:
+        return "Hi %s, you didn't vote the survey %s." % (user, survey_id)
+    else:
+        return "Hi %s, you voted the survey %s with option %s." % (user, survey_id, option[0][0])
+
 def cancelsurvey(author, action_text):
     """
         Cancel a survey
@@ -58,12 +121,16 @@ def cancelsurvey(author, action_text):
 
         app.logger.debug("%s %s " % (author, survey_id))
 
+    except Exception, e:
+        return('Parameters ERROR - Example to cancel ask #2 : `/ask cancel 2`')
+
+    try:
         database = db.get_db()
         database.execute('delete from survey where id = ?', [survey_id])
         database.commit()
 
     except Exception, e:
-        return('Parameters ERROR')   
+        return('DB ERROR')   
     finally:
         database.close()    
 
@@ -87,12 +154,15 @@ def createsurvey(author, action_text):
 
         app.logger.debug("%s %s %s " % (author, question, options))
 
+    except Exception, e:
+        return('Parameters ERROR - Example to create new ask: `/ask this What colour is your favorite? options red, gree, blue`')
+
+    try:
         database = db.get_db()
         database.execute('insert into survey (question, author, options) values (?, ?, ?)', [question, author, options])
         database.commit()
-
     except Exception, e:
-        return('Parameters ERROR')   
+        return('DB ERROR')
     finally:
         database.close()    
 
