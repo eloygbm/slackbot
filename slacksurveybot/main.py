@@ -27,7 +27,8 @@ def ask():
         "this" : createsurvey,
         "cancel" : cancelsurvey,
         "reply" : vote,
-        "myreply" : myvote
+        "myreply" : myvote,
+        "show" : showresults
     }
     HELP_TEXT = "You shoud choose an action %s " % actions.keys()
 
@@ -181,3 +182,36 @@ def listsurveys(user_name, action_text):
     for row in surveys:
         list_msg = list_msg + "\n :small_blue_diamond: *%s* %s options are: [%s]" % (row[0], row[1], row[3])
     return list_msg
+
+def showresults(user_name, action_text):
+    """
+        Show results of a survey
+    """
+
+    survey_id = ""
+    try:
+        parameters = action_text.split(' ',1)[1]
+        survey_id = parameters.split()[0]
+
+        app.logger.debug("%s %s " % (user_name, survey_id))
+
+    except Exception, e:
+        return('Parameters ERROR - Example to show results for ask #2 : `/ask show 2`')
+
+    database = db.get_db()
+    cur = database.execute('SELECT s.id, s.question, s.author, s.options, v.option, count(v.option) as count FROM survey s JOIN vote v ON s.id = v.survey_id and s.id = ? GROUP BY v.option ORDER BY count DESC' , [survey_id])
+    
+    try:
+        first_row = cur.next()
+        results = [first_row] + cur.fetchall()
+        print first_row
+        print results
+        list_msg = "Hi %s. \n Ask %s Question: %s \n Author [%s] \n Options are (%s) \n Results:" % (user_name, survey_id, results[0][1], results[0][2], results[0][3])
+        for row in results:
+            list_msg = list_msg + "\n :small_blue_diamond: Option *%s* = %s votes" % (row[4], row[5])
+
+        return list_msg
+    except Exception, e:
+        app.logger.debug(e)
+        return "Hi %s. There are no votes for survey %s" % (user_name, survey_id)
+
