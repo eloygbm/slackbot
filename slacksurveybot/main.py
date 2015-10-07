@@ -15,8 +15,8 @@ def home():
     """
     return "Hi. This is the project: slacksurveybot"
 
-@app.route("/slack", methods=['POST'])
-def slack():
+@app.route("/ask", methods=['POST'])
+def ask():
     """
         Slack integration
     """
@@ -24,7 +24,8 @@ def slack():
     
     actions = {
         "list" : listsurveys,
-        "add" : createsurvey
+        "this" : createsurvey,
+        "cancel": cancelsurvey
     }
     HELP_TEXT = "You shoud choose an action %s " % actions.keys()
 
@@ -39,9 +40,34 @@ def slack():
         action = action_text.split()[0]
         app.logger.debug("action: %s " % action)
         func = actions.get(action)
+        if func is None:
+            return HELP_TEXT
         return func(user_name, action_text)
 
     return HELP_TEXT
+
+def cancelsurvey(author, action_text):
+    """
+        Cancel a survey
+    """
+
+    survey_id = ""
+    try:
+        parameters = action_text.split(' ',1)[1]
+        survey_id = parameters.split()[0]
+
+        app.logger.debug("%s %s " % (author, survey_id))
+
+        database = db.get_db()
+        database.execute('delete from survey where id = ?', [survey_id])
+        database.commit()
+
+    except Exception, e:
+        return('Parameters ERROR')   
+    finally:
+        database.close()    
+
+    return "Hi %s, the survey %s has been canceled." % (author, survey_id)
 
 def createsurvey(author, action_text):
     """
@@ -50,11 +76,15 @@ def createsurvey(author, action_text):
 
     question = ""
     options = ""
-
+    warning_msg = ""
     try:
         parameters = action_text.split(' ',1)[1]
-        question = parameters.split()[0]
-        options = parameters.split()[1]
+        question = parameters.split('options')[0]
+        options = parameters.split('options')[1]
+
+        if not ',' in options:
+            warning_msg = ":warning: There are limited options"
+
         app.logger.debug("%s %s %s " % (author, question, options))
 
         database = db.get_db()
@@ -66,7 +96,7 @@ def createsurvey(author, action_text):
     finally:
         database.close()    
 
-    return "Hi %s the survey %s has been created." % (author, question)
+    return "Hi %s, the survey %s has been created. %s" % (author, question, warning_msg)
 
 def listsurveys(user_name, action_text):
     """
@@ -79,5 +109,5 @@ def listsurveys(user_name, action_text):
     count_surveys = len(surveys)
     list_msg = "Hi %s, there are %i surveys. \n This is the list:" % (user_name, count_surveys)
     for row in surveys:
-        list_msg = list_msg + "\n :small_blue_diamond: *%s* %s %s" % (row[0], row[1], row[3])
+        list_msg = list_msg + "\n :small_blue_diamond: *%s* %s options are: [%s]" % (row[0], row[1], row[3])
     return list_msg
