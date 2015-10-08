@@ -84,7 +84,11 @@ def cancelsurvey(author, action_text):
 
     try:
         database = db.get_db()
-        database.execute('delete from survey where id = ?', [survey_id])
+        cur = database.execute('select id, question, author from survey where id = ? and author = ?', [survey_id, author])
+        survey = cur.fetchone()
+        if survey is None:
+            return "No no no no no %s, the survey %s is not yours :confused: " % (author, survey_id)
+        database.execute('delete from survey where id = ? and author = ?', [survey_id, author])
         database.commit()
 
     except Exception, e:
@@ -137,7 +141,7 @@ def listsurveys(user_name, action_text):
     count_surveys = len(surveys)
     list_msg = "Hi %s, there are %i surveys. \n This is the list:" % (user_name, count_surveys)
     for row in surveys:
-        list_msg = list_msg + "\n :small_blue_diamond: *%s* %s options are: [%s]" % (row[0], row[1], row[3])
+        list_msg = list_msg + "\n :small_blue_diamond: *%s* %s *%s* options are: [%s]" % (row[0], row[2], row[1], row[3])
     return list_msg
 
 def showresults(user_name, action_text):
