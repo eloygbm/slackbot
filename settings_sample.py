@@ -8,5 +8,5 @@ DEBUG = True
 SECRET_KEY = "$5$K8OLRBclmdsSWkFe$c65ae5RExEN86xTJous20UxU3gpZenqUf.3c3yPzV76"
 SERVER_NAME = "localhost:5000"
 ### Database ###
-DATABASE = join(_cwd, 'db/slacksurveybot.db')
+DATABASE = join(_cwd, 'db/slackbot.db')
 

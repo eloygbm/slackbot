@@ -1,7 +1,7 @@
 """
   Manage app
 """
-from slacksurveybot import db, app
+from slackbot import db, app
 from flask.ext.script import Manager
 
 manager = Manager(app)

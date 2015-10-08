@@ -5,7 +5,7 @@
 
 import sqlite3
 import os
-from slacksurveybot import app
+from slackbot import app
 from flask import _app_ctx_stack
 
 

@@ -1,53 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-    slacksurveybot main
+    surveybot main
 """
 
-import json
 
-from slacksurveybot import db, app
-from flask import render_template, flash, redirect, url_for, request, session, current_app
-
-@app.route("/")
-def home():
-    """
-        Home
-    """
-    return "Hi. This is the project: slacksurveybot"
-
-@app.route("/ask", methods=['POST'])
-def ask():
-    """
-        Slack integration
-    """
-    # TODO auth check
-    
-    actions = {
-        "list" : listsurveys,
-        "this" : createsurvey,
-        "cancel" : cancelsurvey,
-        "reply" : vote,
-        "myreply" : myvote,
-        "show" : showresults
-    }
-    HELP_TEXT = "You shoud choose an action %s " % actions.keys()
-
-    app.logger.debug("request %s " % request.values)
-
-    user_name = request.form['user_name']
-    app.logger.debug("user_name: %s " % user_name)
-
-
-    action_text = request.form['text']
-    if action_text:
-        action = action_text.split()[0]
-        app.logger.debug("action: %s " % action)
-        func = actions.get(action)
-        if func is None:
-            return HELP_TEXT
-        return func(user_name, action_text)
-
-    return HELP_TEXT
+from slackbot import db, app
 
 def vote (user, action_text):
     """
@@ -64,7 +21,7 @@ def vote (user, action_text):
         app.logger.debug("%s %s %s " % (user, survey_id, option))
 
     except Exception, e:
-        return('Parameters ERROR - Example to vote option 3 for ask #2: `/ask reply 2 3`')
+        return('Parameters ERROR - Example to vote option 3 for survey #2: `/survey reply 2 3`')
 
     try:
         database = db.get_db()
@@ -93,7 +50,7 @@ def myvote (user, action_text):
         app.logger.debug("%s %s" % (user, survey_id))
 
     except Exception, e:
-        return('Parameters ERROR - Example to show your vote ask #2: `/ask myreply 2`')
+        return('Parameters ERROR - Example to show your vote survey #2: `/survey myreply 2`')
 
     try:
         database = db.get_db()
@@ -123,7 +80,7 @@ def cancelsurvey(author, action_text):
         app.logger.debug("%s %s " % (author, survey_id))
 
     except Exception, e:
-        return('Parameters ERROR - Example to cancel ask #2 : `/ask cancel 2`')
+        return('Parameters ERROR - Example to cancel survey #2 : `/survey cancel 2`')
 
     try:
         database = db.get_db()
@@ -156,7 +113,7 @@ def createsurvey(author, action_text):
         app.logger.debug("%s %s %s " % (author, question, options))
 
     except Exception, e:
-        return('Parameters ERROR - Example to create new ask: `/ask this What colour is your favorite? options red, gree, blue`')
+        return('Parameters ERROR - Example to create new survey: `/survey this What colour is your favorite? options red, gree, blue`')
 
     try:
         database = db.get_db()
@@ -196,7 +153,7 @@ def showresults(user_name, action_text):
         app.logger.debug("%s %s " % (user_name, survey_id))
 
     except Exception, e:
-        return('Parameters ERROR - Example to show results for ask #2 : `/ask show 2`')
+        return('Parameters ERROR - Example to show results for survey #2 : `/survey show 2`')
 
     database = db.get_db()
     cur = database.execute('SELECT s.id, s.question, s.author, s.options, v.option, count(v.option) as count FROM survey s JOIN vote v ON s.id = v.survey_id and s.id = ? GROUP BY v.option ORDER BY count DESC' , [survey_id])
@@ -206,7 +163,7 @@ def showresults(user_name, action_text):
         results = [first_row] + cur.fetchall()
         print first_row
         print results
-        list_msg = "Hi %s. \n Ask %s Question: %s \n Author [%s] \n Options are (%s) \n Results:" % (user_name, survey_id, results[0][1], results[0][2], results[0][3])
+        list_msg = "Hi %s. \n Survey %s Question: %s \n Author [%s] \n Options are (%s) \n Results:" % (user_name, survey_id, results[0][1], results[0][2], results[0][3])
         for row in results:
             list_msg = list_msg + "\n :small_blue_diamond: Option *%s* = %s votes" % (row[4], row[5])
 
