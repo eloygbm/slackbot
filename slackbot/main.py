@@ -28,7 +28,8 @@ def survey():
         "cancel" : surveybot.cancelsurvey,
         "reply" : surveybot.vote,
         "myreply" : surveybot.myvote,
-        "show" : surveybot.showresults
+        "show" : surveybot.showresults,
+        "publish" : surveybot.publishresults
     }
 
     app.logger.debug("request %s " % request.values)

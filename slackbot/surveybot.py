@@ -3,7 +3,8 @@
     surveybot main
 """
 
-
+import requests
+import json
 from slackbot import db, app
 
 def vote (user, action_text):
@@ -21,7 +22,7 @@ def vote (user, action_text):
         app.logger.debug("%s %s %s " % (user, survey_id, option))
 
     except Exception, e:
-        return('Parameters ERROR - Example to vote option 3 for survey #2: `/survey reply 2 3`')
+        return('Parameters ERROR - Example to vote option Green for survey #2: `/survey reply 2 Green`')
 
     try:
         database = db.get_db()
@@ -167,7 +168,7 @@ def showresults(user_name, action_text):
         results = [first_row] + cur.fetchall()
         print first_row
         print results
-        list_msg = "Hi %s. \n Survey %s Question: %s \n Author [%s] \n Options are (%s) \n Results:" % (user_name, survey_id, results[0][1], results[0][2], results[0][3])
+        list_msg = "Hi %s. \n *Survey:* %s - %s \n *Author:* %s \n *Options are:* %s \n *Results:*" % (user_name, survey_id, results[0][1], results[0][2], results[0][3])
         for row in results:
             list_msg = list_msg + "\n :small_blue_diamond: Option *%s* = %s votes" % (row[4], row[5])
 
@@ -176,3 +177,33 @@ def showresults(user_name, action_text):
         app.logger.debug(e)
         return "Hi %s. There are no votes for survey %s" % (user_name, survey_id)
 
+
+def publishresults(user_name, action_text):
+    """
+        Publish the results to a channel
+    """
+
+    survey_id = ""
+    channel = ""
+    try:
+        parameters = action_text.split(' ',1)[1]
+        survey_id = parameters.split(' ')[0]
+        channel = parameters.split(' ')[1]
+
+        app.logger.debug("%s %s %s" % (user_name, survey_id, channel))
+
+    except Exception, e:
+        return('Parameters ERROR - Example to publish results to #general channel for survey #2 : `/survey publish 2 #general`')
+
+    results = showresults("everybody", action_text)
+
+    payload = {"text": results, "channel": channel, "username": "%s says:" % user_name, "icon_emoji": ":clipboard:"}
+
+    app.logger.debug(payload)
+    response = requests.post("https://hooks.slack.com/services/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", data=json.dumps(payload))
+    
+    app.logger.debug(response)
+
+    return "Publish survey %s to %s done!" % (survey_id, channel)
+
+    #TODO open close survey
