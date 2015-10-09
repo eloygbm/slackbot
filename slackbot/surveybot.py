@@ -161,21 +161,26 @@ def showresults(user_name, action_text):
         return('Parameters ERROR - Example to show results for survey #2 : `/survey show 2`')
 
     database = db.get_db()
-    cur = database.execute('SELECT s.id, s.question, s.author, s.options, v.option, count(v.option) as count FROM survey s JOIN vote v ON s.id = v.survey_id and s.id = ? GROUP BY v.option ORDER BY count DESC' , [survey_id])
+    survey_data = database.execute('SELECT s.id, s.question, s.author, s.options FROM survey s WHERE s.id = ?', [survey_id])
+    try:
+        survey_row = survey_data.next()
+        list_msg = "Hi %s. \n *Survey:* %s - %s \n *Author:* %s \n *Options are:* %s \n *Results:*" % (user_name, survey_id, survey_row[1], survey_row[2], survey_row[3])
+    except Exception, e:
+        app.logger.debug(e)
+        return "Hi %s. The survey %s does not exist." % (user_name, survey_id)
+
+    cur = database.execute('SELECT v.option, count(v.option) as count FROM vote v WHERE v.survey_id = ? GROUP BY v.option ORDER BY count DESC' , [survey_id])
     
     try:
         first_row = cur.next()
         results = [first_row] + cur.fetchall()
-        print first_row
-        print results
-        list_msg = "Hi %s. \n *Survey:* %s - %s \n *Author:* %s \n *Options are:* %s \n *Results:*" % (user_name, survey_id, results[0][1], results[0][2], results[0][3])
         for row in results:
-            list_msg = list_msg + "\n :small_blue_diamond: Option *%s* = %s votes" % (row[4], row[5])
+            list_msg = list_msg + "\n :small_blue_diamond: Option *%s* = %s votes" % (row[0], row[1])
 
         return list_msg
     except Exception, e:
         app.logger.debug(e)
-        return "Hi %s. There are no votes for survey %s" % (user_name, survey_id)
+        return list_msg + "\n There are no votes."
 
 
 def publishresults(user_name, action_text):
