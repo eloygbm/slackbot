@@ -182,7 +182,7 @@ def publishresults(user_name, action_text):
     """
         Publish the results to a channel
     """
-
+    URL_HOOK = "https://hooks.slack.com/services/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"
     survey_id = ""
     channel = ""
     try:
@@ -200,7 +200,7 @@ def publishresults(user_name, action_text):
     payload = {"text": results, "channel": channel, "username": "%s says:" % user_name, "icon_emoji": ":clipboard:"}
 
     app.logger.debug(payload)
-    response = requests.post("https://hooks.slack.com/services/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", data=json.dumps(payload))
+    response = requests.post(URL_HOOK, data=json.dumps(payload))
     
     app.logger.debug(response)
 
