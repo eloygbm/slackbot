@@ -3,10 +3,8 @@
     slackbot main
 """
 
-import json
-
 from slackbot import db, app, surveybot
-from flask import render_template, flash, redirect, url_for, request, session, current_app
+from flask import request, abort
 
 @app.route("/")
 def home():
@@ -20,7 +18,9 @@ def survey():
     """
         Slack integration
     """
-    # TODO auth check
+
+    if app.config['SURVEYBOT_TOKEN'] != request.form['token']:
+        abort(403)
     
     actions = {
         "list" : surveybot.listsurveys,

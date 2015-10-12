@@ -10,3 +10,4 @@ SERVER_NAME = "localhost:5000"
 ### Database ###
 DATABASE = join(_cwd, 'db/slackbot.db')
 
+SURVEYBOT_TOKEN = "surveybot_token" # slack request token
