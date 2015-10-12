@@ -24,8 +24,10 @@ def survey():
     
     actions = {
         "list" : surveybot.listsurveys,
+        "listall" : surveybot.listallsurveys,
         "this" : surveybot.createsurvey,
         "cancel" : surveybot.cancelsurvey,
+        "close" : surveybot.closesurvey,
         "reply" : surveybot.vote,
         "myreply" : surveybot.myvote,
         "show" : surveybot.showresults,

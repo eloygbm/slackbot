@@ -26,6 +26,10 @@ def vote (user, action_text):
 
     try:
         database = db.get_db()
+        cur = database.execute('select id, question, author from survey where id = ? and open is "true"', [survey_id])
+        survey = cur.fetchone()
+        if survey is None:
+            return "No %s, the survey %s is closed! " % (user, survey_id)
         database.execute('delete from vote where survey_id = ? and user = ?', [survey_id, user])
         database.execute('insert into vote (survey_id, user, option) values (?, ?, ?)', [survey_id, user, option])
         database.commit()
@@ -99,6 +103,37 @@ def cancelsurvey(author, action_text):
 
     return "Hi %s, the survey %s has been canceled." % (author, survey_id)
 
+def closesurvey(author, action_text):
+    """
+        Close a survey
+    """
+
+    survey_id = ""
+    try:
+        parameters = action_text.split(' ',1)[1]
+        survey_id = parameters.split()[0]
+
+        app.logger.debug("%s %s " % (author, survey_id))
+
+    except Exception, e:
+        return('Parameters ERROR - Example to close survey #2 : `/survey close 2`')
+
+    try:
+        database = db.get_db()
+        cur = database.execute('select id, question, author from survey where id = ? and author = ?', [survey_id, author])
+        survey = cur.fetchone()
+        if survey is None:
+            return "No no no no no %s, the survey %s is not yours :confused: " % (author, survey_id)
+        database.execute('update survey set open = "false" where id = ? and author = ?', [survey_id, author])
+        database.commit()
+
+    except Exception, e:
+        return('DB ERROR')   
+    finally:
+        database.close()    
+
+    return "Hi %s, the survey %s has been closed." % (author, survey_id)
+
 def createsurvey(author, action_text):
     """
         Create a new survey
@@ -137,12 +172,26 @@ def listsurveys(user_name, action_text):
     """
 
     database = db.get_db()
-    cur = database.execute('SELECT id, question, author, options FROM survey')
+    cur = database.execute('SELECT id, question, author, options, open FROM survey where open is "true"')
+    surveys = cur.fetchall()
+    count_surveys = len(surveys)
+    list_msg = "Hi %s, there are %i surveys open. \n This is the list:" % (user_name, count_surveys)
+    for row in surveys:
+        list_msg = list_msg + "\n %s *%s* *%s* asks *%s*, the survey is *%s* and options are: *[%s]*" % (":clipboard:" if row[4]=='true' else ":x:", row[0], row[2], row[1], "open" if row[4]=='true' else "close", row[3])
+    return list_msg
+
+def listallsurveys(user_name, action_text):
+    """
+        List All the surveys. Including closed.
+    """
+
+    database = db.get_db()
+    cur = database.execute('SELECT id, question, author, options, open FROM survey')
     surveys = cur.fetchall()
     count_surveys = len(surveys)
     list_msg = "Hi %s, there are %i surveys. \n This is the list:" % (user_name, count_surveys)
     for row in surveys:
-        list_msg = list_msg + "\n :small_blue_diamond: *%s* %s *%s* options are: [%s]" % (row[0], row[2], row[1], row[3])
+        list_msg = list_msg + "\n %s *%s* *%s* asks *%s*, the survey is *%s* and options are: *[%s]*" % (":clipboard:" if row[4]=='true' else ":x:", row[0], row[2], row[1], "open" if row[4]=='true' else "close", row[3])
     return list_msg
 
 def showresults(user_name, action_text):
@@ -210,5 +259,3 @@ def publishresults(user_name, action_text):
     app.logger.debug(response)
 
     return "Publish survey %s to %s done!" % (survey_id, channel)
-
-    #TODO open close survey
