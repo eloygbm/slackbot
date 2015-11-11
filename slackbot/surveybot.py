@@ -177,7 +177,7 @@ def listsurveys(user_name, action_text):
     count_surveys = len(surveys)
     list_msg = "Hi %s, there are %i surveys open. \n This is the list:" % (user_name, count_surveys)
     for row in surveys:
-        list_msg = list_msg + "\n %s *%s* *%s* asks *%s*, the survey is *%s* and options are: *[%s]*" % (":clipboard:" if row[4]=='true' else ":x:", row[0], row[2], row[1], "open" if row[4]=='true' else "close", row[3])
+        list_msg = list_msg + "\n %s *%s* *%s* asks *%s*, the survey is *%s* and options are: *[%s]*" % (":clipboard:" if row[4] == 'true' else ":x:", row[0], row[2], row[1], "open" if row[4] == 'true' else "close", row[3])
     return list_msg
 
 def listallsurveys(user_name, action_text):
@@ -191,7 +191,7 @@ def listallsurveys(user_name, action_text):
     count_surveys = len(surveys)
     list_msg = "Hi %s, there are %i surveys. \n This is the list:" % (user_name, count_surveys)
     for row in surveys:
-        list_msg = list_msg + "\n %s *%s* *%s* asks *%s*, the survey is *%s* and options are: *[%s]*" % (":clipboard:" if row[4]=='true' else ":x:", row[0], row[2], row[1], "open" if row[4]=='true' else "close", row[3])
+        list_msg = list_msg + "\n %s *%s* *%s* asks *%s*, the survey is *%s* and options are: *[%s]*" % (":clipboard:" if row[4] == 'true' else ":x:", row[0], row[2], row[1], "open" if row[4] == 'true' else "close", row[3])
     return list_msg
 
 def showresults(user_name, action_text):
