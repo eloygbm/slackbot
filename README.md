@@ -1,3 +1,5 @@
+[![ License ](https://img.shields.io/badge/license-Apache v2-blue.svg)](LICENSE)
+
 # slackbot
 Slack bots project
 
