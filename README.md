@@ -1,3 +1,5 @@
+
+[![ Travis ](https://travis-ci.org/eloygbm/slackbot.svg?branch=master)](TRAVIS)
 [![ License ](https://img.shields.io/badge/license-Apache v2-blue.svg)](LICENSE)
 
 # slackbot
