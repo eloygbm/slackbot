@@ -1,0 +1,1 @@
+gunicorn -D -w 4 -b 0.0.0.0:5000 --access-logfile ./logs/gunicorn.log slackbot:app -p gunicorn.pid --error-logfile ./logs/gunicorn.log
