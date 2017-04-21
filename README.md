@@ -1,6 +1,6 @@
 
 [![ Travis ](https://travis-ci.org/eloygbm/slackbot.svg?branch=master)](https://travis-ci.org/eloygbm/slackbot)
-[![ License ](https://img.shields.io/badge/license-Apache v2-blue.svg)](LICENSE)
+[![ License ](https://img.shields.io/badge/license-Apache%20v2-blue.svg)](LICENSE)
 
 # slackbot
 Slack bots project
